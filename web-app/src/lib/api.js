@@ -6,7 +6,7 @@ const BASE_URL = 'https://api.openchargemap.io/v3/poi';
  * Fetch nearby charging stations from Open Charge Map API
  */
 export async function fetchNearbyStations(latitude, longitude, distance = 15, maxResults = 30) {
-  const url = `${BASE_URL}?output=json&latitude=${latitude}&longitude=${longitude}&distance=${distance}&distanceunit=km&maxresults=${maxResults}&compact=true&verbose=false&key=${API_KEY}`;
+  const url = `${BASE_URL}?output=json&latitude=${latitude}&longitude=${longitude}&distance=${distance}&distanceunit=km&maxresults=${maxResults}&includecomments=true&verbose=false&key=${API_KEY}`;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch stations');
@@ -77,22 +77,22 @@ function normalizeStation(poi) {
     return [typeName, power, level].filter(Boolean).join(' · ');
   }).filter(Boolean);
 
-  // Determine a thumbnail image based on the number of connections
-  const thumbnails = [
-    'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1647500843411-0a0c2c568688?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1620714223084-8fcacc6dfd8d?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1605600659908-0ef719419d41?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1594535182308-8ffefbb661e1?w=600&h=400&fit=crop',
-  ];
+  // Fallback image for stations without a photo in the OCM database
+  const FALLBACK_IMAGE = 'https://www.phscompliance.co.uk/images/services/electric_vehicles/shutterstock_2307870505.pagespeed.1747992515.jpg/rs-960x10000a.jpg';
 
   const status = poi.StatusType?.Title || 'Unknown';
   const isOperational = poi.StatusType?.IsOperational !== false;
 
-  let thumbnail = thumbnails[poi.ID % thumbnails.length];
-  if (poi.MediaItems && poi.MediaItems.length > 0 && poi.MediaItems[0].ItemURL) {
-    thumbnail = poi.MediaItems[0].ItemURL;
+  let thumbnail = FALLBACK_IMAGE;
+  if (poi.MediaItems && Array.isArray(poi.MediaItems) && poi.MediaItems.length > 0) {
+    // Find the first media item with a usable image URL
+    for (const media of poi.MediaItems) {
+      const imgUrl = media.ItemURL || media.ItemThumbnailURL;
+      if (imgUrl && (imgUrl.startsWith('http://') || imgUrl.startsWith('https://'))) {
+        thumbnail = imgUrl;
+        break;
+      }
+    }
   }
 
   return {

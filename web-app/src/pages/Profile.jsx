@@ -217,12 +217,6 @@ export default function Profile() {
       {/* Visited Tab */}
       {activeTab === 'visited' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div className="visited-tab-description" style={{ background: 'var(--surface)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: 'var(--green-400)' }}>About Visited Stations</h3>
-            <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.4' }}>
-              Keep a personal log of stations you've visited. After your charging session, you can leave a review, notes, and the date you visited. This history helps you remember the best spots for your future trips!
-            </p>
-          </div>
 
           {visitedStations.length === 0 ? (
             <div className="empty-state">

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGlobalContext } from '../context/GlobalProvider';
 import { fetchNearbyStations, getCurrentPosition } from '../lib/api';
-import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, CircleMarker } from 'react-leaflet';
 
 export default function Home() {
   const { user } = useGlobalContext();
@@ -105,10 +105,10 @@ export default function Home() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
             />
-            {/* User Location */}
-            <Marker position={[location.lat, location.lng]}>
-              <Popup><span>You are here</span></Popup>
-            </Marker>
+            {/* User Location - Blue pulsing dot */}
+            <CircleMarker center={[location.lat, location.lng]} radius={10} pathOptions={{ color: '#4285F4', fillColor: '#4285F4', fillOpacity: 0.9, weight: 3 }}>
+              <Popup><span>📍 Your Location</span></Popup>
+            </CircleMarker>
             <Circle center={[location.lat, location.lng]} radius={searchRadius * 1000} pathOptions={{ color: 'var(--green-500)', fillColor: 'var(--green-500)', fillOpacity: 0.1 }} />
             
             {/* Stations */}

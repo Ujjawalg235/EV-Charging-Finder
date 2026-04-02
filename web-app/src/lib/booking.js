@@ -21,6 +21,38 @@ export function getAvailableSlots(stationId, date) {
   const bookings = getBookings();
   const dateStr = new Date(date).toISOString().slice(0, 10);
 
+  // Get all active bookings for this station on this date
+  const activeBookings = bookings.filter(
+    b => b.stationId === stationId &&
+      b.status !== 'cancelled' &&
+      b.date === dateStr
+  );
+
+  // Build a Set of all slot IDs that are occupied (locked by duration)
+  const occupiedSlots = new Set();
+  activeBookings.forEach(b => {
+    // Parse the booked slot start time
+    const [startHour, startMin] = b.slotTime
+      ? b.slotTime.replace(/ (AM|PM)/, (_, ampm) => '')
+      : b.slotId.split('_')[1].split(':');
+    
+    // Extract hour/min from slotId which is in 24h format: "YYYY-MM-DD_HH:MM"
+    const timePart = b.slotId.split('_')[1]; // "HH:MM"
+    if (!timePart) return;
+    const [sH, sM] = timePart.split(':').map(Number);
+    const duration = b.duration || 30; // default 30 min
+    const slotsNeeded = Math.ceil(duration / 30);
+
+    for (let i = 0; i < slotsNeeded; i++) {
+      const totalMin = sH * 60 + sM + i * 30;
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      if (h > 22) break; // don't go past closing
+      const lockId = `${dateStr}_${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      occupiedSlots.add(lockId);
+    }
+  });
+
   // Generate slots from 6 AM to 10 PM in 30-minute intervals
   const slots = [];
   for (let hour = 6; hour <= 22; hour++) {
@@ -29,18 +61,11 @@ export function getAvailableSlots(stationId, date) {
       const timeStr = `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
       const slotId = `${dateStr}_${timeStr}`;
 
-      // Check if slot is already booked
-      const isBooked = bookings.some(
-        b => b.stationId === stationId &&
-          b.slotId === slotId &&
-          b.status !== 'cancelled'
-      );
-
       slots.push({
         id: slotId,
         time: timeStr,
         displayTime: formatTime(hour, min),
-        isBooked,
+        isBooked: occupiedSlots.has(slotId),
       });
     }
   }
