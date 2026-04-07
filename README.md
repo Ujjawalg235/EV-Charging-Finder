@@ -12,7 +12,7 @@ A comprehensive, responsive React web application designed to help electric vehi
 *   **User "Visited" Log & Reviews**: A personal profile dashboard that saves your previously visited stations, allowing you to log reviews, experiences, and dates for API-sourced charging spots using `localStorage`.
 *   **Modern Premium UI**: Built with responsive glassmorphism aesthetics, dynamic dark mode layout, and frictionless tab-based routing for optimal mobile and desktop user experience.
 
-## 🚀 Tech Stack
+## 🚀 Tech Stack 
 
 - **Frontend Framework:** React 18, utilizing functional components and hooks
 - **Build Tool:** Vite for blazing fast development and optimized production builds
